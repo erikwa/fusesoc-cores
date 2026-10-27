@@ -1,0 +1,90 @@
+CAPI=3:
+name: erikwa:games:neon_striker:1.0.0
+description: NEON STRIKER '96, a 90s-style arcade shooter in Python
+
+provider:
+  name: git
+  repo: git@github.com:erikwa/neon-striker-96.git
+  version: 9073a2295c4e6ac2b99fc930ea0ed2796bc5960a
+
+# Lives and credits for the easy and hard difficulty presets
+let:
+  lives_easy: "9"
+  credits_easy: "9"
+  lives_hard: "1"
+  credits_hard: "0"
+
+vars:
+  difficulty:
+    datatype: enum
+    values: [custom, easy, hard]
+    default: custom
+    description: Preset for lives and credits, custom uses the lives and credits vars
+  lives:
+    datatype: int
+    default: 3
+    description: Lives per credit, 1-99 (difficulty=custom)
+  credits:
+    datatype: int
+    default: 3
+    description: Continues per game, 0-99 (difficulty=custom)
+  start_weapon_level:
+    datatype: int
+    default: 1
+    description: Weapon level (1-5) at game start
+    # Demo of a deprecated variable: it still works, but setting it warns
+    deprecated: will be removed, collect P power-ups instead
+  start_level:
+    datatype: int
+    default: 1
+    description: Stage (1-8) a new game begins on
+
+# The same ranges the game checks, reported before the build starts
+assert:
+  - condition: "vars.lives >= 1 && vars.lives <= 99"
+    message: "lives must be 1-99 (got ${vars.lives})"
+  - condition: "vars.credits >= 0 && vars.credits <= 99"
+    message: "credits must be 0-99 (got ${vars.credits})"
+  - condition: "vars.start_weapon_level >= 1 && vars.start_weapon_level <= 5"
+    message: "start_weapon_level must be 1-5 (got ${vars.start_weapon_level})"
+  - condition: "vars.start_level >= 1 && vars.start_level <= 8"
+    message: "start_level must be 1-8 (got ${vars.start_level})"
+
+filesets:
+  # Only there so that verilator has something to lint
+  placeholder:
+    files: [top.v]
+    file_type: verilogSource
+  game:
+    files: [neon_striker.py: {copyto: neon_striker.py}]
+    file_type: user
+
+# Runs the game with the python3 on PATH, which must already have pygame-ce and
+# numpy. The hook runs in the build directory, so hiscore.txt is saved there.
+scripts:
+  play:
+    cmd:
+      - python3
+      - neon_striker.py
+      # The first matching entry wins; else is the fallback
+      - first_match:
+          - if: "vars.difficulty == 'easy'"
+            add: ["--lives=${locals.lives_easy}", "--credits=${locals.credits_easy}"]
+          - if: "vars.difficulty == 'hard'"
+            add: ["--lives=${locals.lives_hard}", "--credits=${locals.credits_hard}"]
+          - else:
+            add: ["--lives=${vars.lives}", "--credits=${vars.credits}"]
+      - "--start-weapon-level=${vars.start_weapon_level}"
+      - "--start-level=${vars.start_level}"
+
+targets:
+  # Run with `fusesoc run`: verilator lints the placeholder, then the
+  # post_build hook starts the game.
+  default:
+    flow: lint
+    flow_options:
+      tool: verilator
+    toplevel: top
+    filesets: [placeholder, game]
+    hooks:
+      post_build: [play]
