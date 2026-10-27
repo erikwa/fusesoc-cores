@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : ::wiredelay:0-r1
 description : Wire delay Verilog model

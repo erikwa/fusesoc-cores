@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : ::simple_spi:1.6.1
 description : OpenCores SPI Core
@@ -16,20 +16,26 @@ filesets:
       - bench/verilog/spi_slave_model.v
       - bench/verilog/wb_master_model.v
     file_type : verilogSource
-    depend: [vlog_tb_utils]
+    depend: ["::vlog_tb_utils"]
 
 targets:
   default:
     filesets: [rtl]
 
   lint:
-    default_tool : verilator
+    vars: {tool_verilator: true}
+    flow: lint
+    flags: {tool: verilator}
     filesets : [rtl]
-    tools: {verilator : {mode : lint-only}}
+    flow_options: {tool: verilator, mode: lint-only}
     toplevel : simple_spi
 
   sim:
-    default_tool: icarus
+    vars: {tool_icarus: true}
+    flow: sim
+    flags: {tool: icarus}
+    flow_options:
+      tool: icarus
     filesets: [rtl,tb]
     toplevel: tst_bench_top
 

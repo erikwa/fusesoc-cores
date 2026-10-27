@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name : ::wb_altera_ddr_wrapper:0-r1
 
 filesets:
@@ -11,7 +11,7 @@ filesets:
       - rtl/verilog/wb_port.v
       - rtl/verilog/ddr_ctrl_wrapper.v
     file_type : verilogSource
-    depend : [fifo]
+    depend: ["::fifo"]
 
   tb:
     files:
@@ -66,20 +66,22 @@ filesets:
       - bench/ddr_ctrl_ip/ddr_ctrl_ip_phy.v
       - bench/wb_ddr_ctrl_tb.v
     file_type : verilogSource
-    depend: [mt46v16m16p, wb_bfm]
+    depend: ["::mt46v16m16p", "::wb_bfm"]
 
 targets:
   default:
     filesets: [rtl]
-  sim:
-    default_tool : modelsim
-    filesets: [rtl,tb]
-    tools:
-      modelsim:
-        vlog_options : [+define+sg5B, +define+x16, +define+FULL_MEM]
-        vsim_options : [-t, 1ps, -suppress, 3009]
-    toplevel: [wb_ddr_ctrl_tb]
 
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `modelsim`.
+  # sim:
+  #   default_tool : modelsim
+  #   filesets: [rtl,tb]
+  #   tools:
+  #     modelsim:
+  #       vlog_options : [+define+sg5B, +define+x16, +define+FULL_MEM]
+  #       vsim_options : [-t, 1ps, -suppress, 3009]
+  #   toplevel: [wb_ddr_ctrl_tb]
 provider:
   name    : github
   user    : fusesoc

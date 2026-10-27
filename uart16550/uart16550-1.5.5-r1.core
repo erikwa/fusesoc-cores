@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name : ::uart16550:1.5.5-r1
 description : UART 16550 transceiver
 

@@ -1,7 +1,21 @@
-CAPI=2:
+CAPI=3:
 
 name: ::stream_utils:1.3-r1
 description : FIFOs and size converters for data streams
+
+vars:
+  stream_bfm:
+    datatype: bool
+    default: false
+    description: Adds the stream reader and writer BFMs to the default target
+  # CAPI=2 selected some files by the top level's tool (`tool_<name>` flags).
+  # CAPI=3 has no tool in its context, so a top level building this core with
+  # that tool sets its variable: `vars: {tool_quartus: true}` in its
+  # target, or `--var +tool_quartus` on the command line.
+  tool_quartus:
+    datatype: bool
+    default: false
+    description: The top level builds with Quartus
 
 filesets:
   bfm:
@@ -48,28 +62,34 @@ targets:
   default:
     filesets:
       - src_files
-      - "stream_bfm? (bfm)"
-      - "tool_quartus? (constraints)"
+      - if: "vars.stream_bfm"
+        add: [bfm]
+      - if: "vars.tool_quartus"
+        add: [constraints]
 
-  stream_upsizer_tb: &tb
-    default_tool: icarus
+  stream_upsizer_tb:
+    vars: {tool_icarus: true}
+    flow: sim
+    flags: {tool: icarus}
+    flow_options:
+      tool: icarus
     description : Testbench for stream upsizer
     filesets: [src_files, bfm, tb_files]
     parameters: [read_rate, write_rate]
     toplevel: stream_upsizer_tb
 
   stream_downsizer_tb:
-    <<: *tb
+    extends: stream_upsizer_tb
     description : Testbench for stream downsizer
     toplevel: stream_downsizer_tb
 
   stream_fifo_tb:
-    <<: *tb
+    extends: stream_upsizer_tb
     description : Testbench for stream fifo
     toplevel: stream_fifo_tb
 
   stream_dual_clock_fifo_tb:
-    <<: *tb
+    extends: stream_upsizer_tb
     description : Testbench for stream dual clock FIFO
     toplevel: stream_dual_clock_fifo_tb
 

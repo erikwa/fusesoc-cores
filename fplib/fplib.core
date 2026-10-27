@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name: ::fplib:1.0.0
 description: "A fixed-point math library for SystemVerilog (synthesizable)"
 
@@ -35,19 +35,20 @@ filesets:
 
 targets:
 
-  default: &default
+  default:
     filesets:
       - rtl
 
   sim:
-    <<: *default
+    extends: default
     description: Simulate the design
-    default_tool: xcelium
-    filesets_append:
+    flow: sim
+    filesets:
+      - inherit: default
       - tests
     toplevel: test_fplib
-    tools:
-      xcelium:
-        xrun_options:
-          - -vlogcontrolrelax NOTDOT
+    flow_options:
+      tool: xcelium
+      xrun_options:
+        - -vlogcontrolrelax NOTDOT
 

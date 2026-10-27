@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : open-logic:open-logic:base:3.0.2
 description : official release (stable); Basic Circuitry (e.g. FIFOs, CDCs, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#base

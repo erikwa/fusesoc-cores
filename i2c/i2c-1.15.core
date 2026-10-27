@@ -1,7 +1,17 @@
-CAPI=2:
+CAPI=3:
 
 name : ::i2c:1.15
 description : WISHBONE revB.2 compliant I2C controller
+
+# CAPI=2 selected some files by the top level's tool (`tool_<name>` flags).
+# CAPI=3 has no tool in its context, so a top level building this core with
+# that tool sets its variable: `vars: {tool_verilator: true}` in its
+# target, or `--var +tool_verilator` on the command line.
+vars:
+  tool_verilator:
+    datatype: bool
+    default: false
+    description: The top level builds with Verilator
 
 filesets:
   rtl_files:
@@ -10,13 +20,15 @@ filesets:
       - rtl/verilog/i2c_master_byte_ctrl.v
       - rtl/verilog/i2c_master_defines.v: {is_include_file : true}
       - rtl/verilog/i2c_master_top.v
-      - "tool_verilator? (data/verilator_waiver.vlt)" : {file_type : vlt}
+      - if: "vars.tool_verilator"
+        add:
+          - data/verilator_waiver.vlt: {file_type: vlt}
     file_type : verilogSource
 
   tb_files:
     depend:
-      - ">=vlog_tb_utils-1.0"
-      - wiredelay
+      - ">=::vlog_tb_utils:1.0"
+      - "::wiredelay"
     files:
       - bench/verilog/wb_master_model.v
       - bench/verilog/tst_bench_top.v
@@ -29,22 +41,30 @@ targets:
   default:
     filesets : [rtl_files]
   lint:
-    default_tool : verilator
+    vars: {tool_verilator: true}
+    flow: lint
+    flags: {tool: verilator}
     filesets : [rtl_files]
-    tools:
-      verilator:
-        mode : lint-only
+    flow_options:
+      tool: verilator
+      mode : lint-only
     toplevel : i2c_master_top
   sim:
-    default_tool : icarus
+    vars: {tool_icarus: true}
+    flow: sim
+    flags: {tool: icarus}
+    flow_options:
+      tool: icarus
     filesets : [rtl_files, tb_files]
     parameters : [WITH_VTU]
     toplevel : [tst_bench_top]
 
-  sky130:
-    default_tool: openlane
-    filesets: [rtl_files, openlane]
-    toplevel: i2c_master_top
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `openlane`.
+  # sky130:
+  #   default_tool: openlane
+  #   filesets: [rtl_files, openlane]
+  #   toplevel: i2c_master_top
 
 parameters:
   WITH_VTU:

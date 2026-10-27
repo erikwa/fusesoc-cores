@@ -1,11 +1,23 @@
-CAPI=2:
+CAPI=3:
 
 name : ::serv:1.1.0
+
+# CAPI=2 selected some files by the top level's tool (`tool_<name>` flags).
+# CAPI=3 has no tool in its context, so a top level building this core with
+# that tool sets its variable: `vars: {tool_verilator: true}` in its
+# target, or `--var +tool_verilator` on the command line.
+vars:
+  tool_verilator:
+    datatype: bool
+    default: false
+    description: The top level builds with Verilator
 
 filesets:
   core:
     files:
-      - "tool_verilator? (data/verilator_waiver.vlt)" : {file_type: vlt}
+      - if: "vars.tool_verilator"
+        add:
+          - data/verilator_waiver.vlt: {file_type: vlt}
       - rtl/serv_bufreg.v
       - rtl/serv_alu.v
       - rtl/serv_csr.v
@@ -25,21 +37,23 @@ targets:
   default:
     filesets : [core]
     parameters :
-      - "is_toplevel? (PRE_REGISTER)"
-      - "is_toplevel? (RESET_STRATEGY)"
+      - if: "core.is_toplevel"
+        add: [PRE_REGISTER, RESET_STRATEGY]
       - RISCV_FORMAL
       - SERV_CLEAR_RAM
-      - "is_toplevel? (WITH_CSR)"
-    toplevel : ["is_toplevel? (serv_rf_top)"]
+      - if: "core.is_toplevel"
+        add: [WITH_CSR]
+    toplevel: [{if: "core.is_toplevel", add: [serv_rf_top]}]
 
   lint:
-    default_tool : verilator
+    vars: {tool_verilator: true}
+    flow: lint
     filesets : [core]
-    tools:
-      verilator:
-        mode : lint-only
-        verilator_options:
-          - "-Wall"
+    flow_options:
+      tool: verilator
+      mode : lint-only
+      verilator_options:
+        - "-Wall"
     toplevel : serv_rf_top
 
 parameters:

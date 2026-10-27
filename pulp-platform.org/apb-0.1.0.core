@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name: pulp-platform.org::apb:0.1.0
 filesets : {rtl : {files : [src/apb_intf.sv : {file_type : systemVerilogSource}]}}
 targets : {default : {filesets : [rtl]}}

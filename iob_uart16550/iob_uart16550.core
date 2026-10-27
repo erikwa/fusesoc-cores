@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name: iobundle:py2hwsw:iob_uart16550:0.1
 #license: MIT

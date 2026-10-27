@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name : ::jtag_tap:1.13-r1
 description : JTAG Tap
 

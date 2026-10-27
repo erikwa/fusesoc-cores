@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name : ::i2c:1.14-r1
 filesets:
   rtl_files:
@@ -11,8 +11,8 @@ filesets:
 
   tb_files:
     depend:
-      - ">=vlog_tb_utils-1.0"
-      - wiredelay
+      - ">=::vlog_tb_utils:1.0"
+      - "::wiredelay"
     files:
       - bench/verilog/wb_master_model.v
       - bench/verilog/tst_bench_top.v
@@ -23,7 +23,11 @@ targets:
   default:
     filesets : [rtl_files]
   sim:
-    default_tool : icarus
+    vars: {tool_icarus: true}
+    flow: sim
+    flags: {tool: icarus}
+    flow_options:
+      tool: icarus
     filesets : [rtl_files, tb_files]
     toplevel : [tst_bench_top]
 

@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : ::wb_streamer:1.1-r1
 description : Wishbone read/write AXI streamer core
@@ -15,8 +15,8 @@ filesets:
       - rtl/verilog/wb_stream_writer.v
     file_type : verilogSource
     depend:
-      - ">=fifo-1.0"
-      - ">=stream_utils-1.1"
+      - ">=::fifo:1.0"
+      - ">=::stream_utils:1.1"
 
   tb:
     files:
@@ -25,8 +25,8 @@ filesets:
       - bench/wb_stream_writer_tb.v
     file_type : verilogSource
     depend :
-      - ">=vlog_tb_utils-1.0"
-      - ">=wb_bfm-1.0"
+      - ">=::vlog_tb_utils:1.0"
+      - ">=::wb_bfm:1.0"
 
 parameters:
   transactions:
@@ -42,13 +42,17 @@ parameters:
 targets:
   default:
     filesets : [rtl]
-  sim_reader: &sim
-    default_tool : icarus
+  sim_reader:
+    vars: {tool_icarus: true}
+    flow: sim
+    flags: {tool: icarus}
+    flow_options:
+      tool: icarus
     filesets : [rtl, tb]
     parameters : [transactions, verbose]
     toplevel : wb_stream_reader_tb
   sim_writer:
-    <<: *sim
+    extends: sim_reader
     toplevel : wb_stream_writer_tb
 
 provider:

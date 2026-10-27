@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : ::adv_debug_sys:3.1.0-r1
 
@@ -33,7 +33,9 @@ targets:
   default:
     filesets : [adv_dbg_if]
   jsp_tb:
-    default_tool : icarus
+    flow: sim
+    flow_options:
+      tool: icarus
     filesets : [adv_dbg_if, jsp_tb]
     toplevel : [adv_debug_tb]
 provider:

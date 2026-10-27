@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name: ::verilator_tb_utils:1.0
 description: "Verilator test bench utility class"
@@ -11,7 +11,7 @@ filesets:
       - jtagServer.cpp
       - jtagServer.h:           {is_include_file: true}
     file_type: cppSource
-    depend: [elf-loader]
+    depend: ["::elf-loader"]
 
 targets:
   default:

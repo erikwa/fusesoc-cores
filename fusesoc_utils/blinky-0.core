@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name : fusesoc:utils:blinky:0
 
 filesets:
@@ -109,7 +109,7 @@ filesets:
 
   tb:
     files: [blinky_tb.v : {file_type : verilogSource}]
-    depend: [vlog_tb_utils]
+    depend: ["::vlog_tb_utils"]
 
   tinyfpga_bx:
     files: [tinyfpga_bx/pinout.pcf : {file_type : PCF}]
@@ -148,387 +148,426 @@ filesets:
       - zybo_z7/blinky.xdc : {file_type : xdc}
 
 targets:
-  default: &default
+  default:
     filesets : [rtl]
-    toplevel: ["is_toplevel? (blinky)"]
+    toplevel: [{if: "core.is_toplevel", add: [blinky]}]
 
   alhambra_II:
-    default_tool : icestorm
+    flow: icestorm
+    flags: {tool: icestorm}
     description : Alhambra II iCE40-HX4K based open-source hardware board
     hooks:
       post_run: [iceprog]
     filesets : [rtl, proginfo, alhambra_II]
     parameters : [clk_freq_hz=12000000]
-    tools:
-      icestorm:
-        nextpnr_options : [--hx8k, --package, "tq144:4k"]
-        pnr : next
+    flow_options:
+      nextpnr_options : [--hx8k, --package, "tq144:4k"]
+      pnr : next
     toplevel : blinky
 
-  AnalogMax:
-    default_tool : quartus
-    filesets : [rtl, AnalogMax]
-    parameters : [clk_freq_hz=12000000]
-    tools:
-      quartus:
-        family : MAX 10
-        device : 10M08SAU169C8G
-    toplevel: blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # AnalogMax:
+  #   default_tool : quartus
+  #   filesets : [rtl, AnalogMax]
+  #   parameters : [clk_freq_hz=12000000]
+  #   tools:
+  #     quartus:
+  #       family : MAX 10
+  #       device : 10M08SAU169C8G
+  #   toplevel: blinky
 
-  apf27:
-    default_tool : ise
-    filesets : [rtl, apf27]
-    parameters : [clk_freq_hz=100000000]
-    tools:
-      ise:
-        family  : Spartan3A
-        device  : xc3s200a
-        package : ft256
-        speed   : -5
-    toplevel : blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `ise`.
+  # apf27:
+  #   default_tool : ise
+  #   filesets : [rtl, apf27]
+  #   parameters : [clk_freq_hz=100000000]
+  #   tools:
+  #     ise:
+  #       family  : Spartan3A
+  #       device  : xc3s200a
+  #       package : ft256
+  #       speed   : -5
+  #   toplevel : blinky
 
   arty_a7_35t:
-    default_tool : vivado
+    flow: vivado
+    flags: {tool: vivado}
     filesets : [rtl, arty_a7_35t]
     parameters : [clk_freq_hz=100000000]
-    tools:
-      vivado:
-        part : xc7a35ticsg324-1L
+    flow_options:
+      part : xc7a35ticsg324-1L
     toplevel : blinky
 
   colorlight_5a75b:
-    default_tool : trellis
+    flow: trellis
+    flags: {tool: trellis}
     filesets : [rtl, colorlight_5a75b]
     parameters : [clk_freq_hz=50000000]
-    tools:
-      trellis:
-        nextpnr_options : [--25k --package CABGA256 --speed 6 --freq 65]
+    flow_options:
+      nextpnr_options : [--25k --package CABGA256 --speed 6 --freq 65]
     toplevel : blinky
 
-  cyc1000:
-    <<: *default
-    default_tool : quartus
-    filesets_append : [cyc1000]
-    parameters : [clk_freq_hz=12000000]
-    tools:
-      quartus:
-        family : Cyclone 10 LP
-        device : 10CL025YU256C8G
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # cyc1000:
+  #   <<: *default
+  #   default_tool : quartus
+  #   filesets_append : [cyc1000]
+  #   parameters : [clk_freq_hz=12000000]
+  #   tools:
+  #     quartus:
+  #       family : Cyclone 10 LP
+  #       device : 10CL025YU256C8G
 
-  cisco-hwic-3g-cdma:
-    <<: *default
-    default_tool : quartus
-    filesets_append : [cisco-hwic-3g-cdma]
-    parameters : [clk_freq_hz=25000000]
-    tools:
-      quartus:
-        family : Cyclone II
-        device : EP2C35F484C8
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # cisco-hwic-3g-cdma:
+  #   <<: *default
+  #   default_tool : quartus
+  #   filesets_append : [cisco-hwic-3g-cdma]
+  #   parameters : [clk_freq_hz=25000000]
+  #   tools:
+  #     quartus:
+  #       family : Cyclone II
+  #       device : EP2C35F484C8
 
-  de0_nano:
-    default_tool : quartus
-    filesets : [rtl, de0_nano]
-    parameters : [clk_freq_hz=50000000]
-    tools:
-      quartus:
-        family : Cyclone IV E
-        device : EP4CE22F17C6
-    toplevel: blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # de0_nano:
+  #   default_tool : quartus
+  #   filesets : [rtl, de0_nano]
+  #   parameters : [clk_freq_hz=50000000]
+  #   tools:
+  #     quartus:
+  #       family : Cyclone IV E
+  #       device : EP4CE22F17C6
+  #   toplevel: blinky
 
-  de0_nanosoc:
-    default_tool : quartus
-    filesets : [rtl, de0_nanosoc]
-    parameters : [clk_freq_hz=50000000]
-    tools:
-      quartus:
-        family : Cyclone V
-        device : 5CSEMA4U23C6
-        board_device_index : 2
-    toplevel: blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # de0_nanosoc:
+  #   default_tool : quartus
+  #   filesets : [rtl, de0_nanosoc]
+  #   parameters : [clk_freq_hz=50000000]
+  #   tools:
+  #     quartus:
+  #       family : Cyclone V
+  #       device : 5CSEMA4U23C6
+  #       board_device_index : 2
+  #   toplevel: blinky
 
-  de1_soc_revF:
-    default_tool : quartus
-    filesets : [rtl, de1_soc_revF]
-    parameters : [clk_freq_hz=50000000]
-    tools:
-      quartus:
-        family : Cyclone V
-        device : 5CSEMA5F31C6
-        board_device_index : 2
-    toplevel: blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # de1_soc_revF:
+  #   default_tool : quartus
+  #   filesets : [rtl, de1_soc_revF]
+  #   parameters : [clk_freq_hz=50000000]
+  #   tools:
+  #     quartus:
+  #       family : Cyclone V
+  #       device : 5CSEMA5F31C6
+  #       board_device_index : 2
+  #   toplevel: blinky
 
-  de10_soc:
-    default_tool : quartus
-    filesets : [rtl, de10_soc]
-    parameters : [clk_freq_hz=50000000]
-    tools:
-      quartus:
-        family : Cyclone V
-        device : 5CSXFC6D6F31C6
-        cable : "DE-SoC"
-        board_device_index : 2
-    toplevel: blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # de10_soc:
+  #   default_tool : quartus
+  #   filesets : [rtl, de10_soc]
+  #   parameters : [clk_freq_hz=50000000]
+  #   tools:
+  #     quartus:
+  #       family : Cyclone V
+  #       device : 5CSXFC6D6F31C6
+  #       cable : "DE-SoC"
+  #       board_device_index : 2
+  #   toplevel: blinky
 
   ecp5_evn:
-    default_tool : trellis
+    flow: trellis
+    flags: {tool: trellis}
     description : ECP5 Evaluation Board
     filesets : [rtl, ecp5_evn]
     parameters : [clk_freq_hz=12000000]
-    tools:
-      trellis:
-        nextpnr_options : [--um5g-85k --package CABGA381]
+    flow_options:
+      nextpnr_options : [--um5g-85k --package CABGA381]
     toplevel : blinky
 
-  soc_kit:
-    default_tool : quartus
-    filesets : [rtl, soc_kit]
-    parameters : [clk_freq_hz=50000000]
-    tools:
-      quartus:
-        family : Cyclone V
-        device : 5CSXFC6D6F31C6
-        board_device_index : 2
-        cable : "USB-BlasterII"  # Is sufficient
-    toplevel: blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # soc_kit:
+  #   default_tool : quartus
+  #   filesets : [rtl, soc_kit]
+  #   parameters : [clk_freq_hz=50000000]
+  #   tools:
+  #     quartus:
+  #       family : Cyclone V
+  #       device : 5CSXFC6D6F31C6
+  #       board_device_index : 2
+  #       cable : "USB-BlasterII"  # Is sufficient
+  #   toplevel: blinky
 
   ice40hx1k_evb:
-    default_tool : icestorm
+    flow: icestorm
+    flags: {tool: icestorm}
     filesets : [rtl, proginfo, ice40hx1k_evb]
     parameters : [clk_freq_hz=100000000]
-    tools:
-      icestorm:
-        nextpnr_options : [--hx1k, --package, vq100]
-        pnr : next
+    flow_options:
+      nextpnr_options : [--hx1k, --package, vq100]
+      pnr : next
     toplevel : blinky
 
   ice40-hx8k_breakout:
-    default_tool : icestorm
+    flow: icestorm
+    flags: {tool: icestorm}
     filesets : [rtl, proginfo, ice40-hx8k_breakout]
     parameters : [clk_freq_hz=12000000]
-    tools:
-      icestorm:
-        nextpnr_options : [--hx8k, --package, ct256]
-        pnr : next
+    flow_options:
+      nextpnr_options : [--hx8k, --package, ct256]
+      pnr : next
     toplevel : blinky
 
-  lx9_microboard:
-    default_tool : ise
-    filesets : [rtl, lx9_microboard]
-    parameters : [clk_freq_hz=40000000]
-    tools:
-      ise:
-        family  : Spartan6
-        device  : xc6slx9
-        package : csg324
-        speed   : -2
-    toplevel : blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `ise`.
+  # lx9_microboard:
+  #   default_tool : ise
+  #   filesets : [rtl, lx9_microboard]
+  #   parameters : [clk_freq_hz=40000000]
+  #   tools:
+  #     ise:
+  #       family  : Spartan6
+  #       device  : xc6slx9
+  #       package : csg324
+  #       speed   : -2
+  #   toplevel : blinky
 
-  machXO2_breakout:
-    default_tool : diamond
-    description : MachXO2 Breakout Board Evaluation Kit
-    filesets : [rtl, machXO2_breakout]
-    tools:
-      diamond: {part: LCMXO2-7000HE-4TG144C}
-    toplevel : blinky_machXO2_breakout
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `diamond`.
+  # machXO2_breakout:
+  #   default_tool : diamond
+  #   description : MachXO2 Breakout Board Evaluation Kit
+  #   filesets : [rtl, machXO2_breakout]
+  #   tools:
+  #     diamond: {part: LCMXO2-7000HE-4TG144C}
+  #   toplevel : blinky_machXO2_breakout
 
-  machXO3_breakout:
-    default_tool : diamond
-    description : Lattice MachXO3LF Starter Kit LCMX03LF-6900C
-    filesets : [rtl, machXO3_breakout]
-    parameters : [clk_freq_hz=12000000]
-    tools:
-      diamond: {part: LCMXO3LF-6900C-5BG256C}
-    toplevel : blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `diamond`.
+  # machXO3_breakout:
+  #   default_tool : diamond
+  #   description : Lattice MachXO3LF Starter Kit LCMX03LF-6900C
+  #   filesets : [rtl, machXO3_breakout]
+  #   parameters : [clk_freq_hz=12000000]
+  #   tools:
+  #     diamond: {part: LCMXO3LF-6900C-5BG256C}
+  #   toplevel : blinky
 
-  max1000:
-    <<: *default
-    default_tool : quartus
-    filesets_append : [max1000]
-    parameters : [clk_freq_hz=12000000]
-    tools:
-      quartus:
-        family : MAX 10
-        device : 10M08SAU169C8G
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # max1000:
+  #   <<: *default
+  #   default_tool : quartus
+  #   filesets_append : [max1000]
+  #   parameters : [clk_freq_hz=12000000]
+  #   tools:
+  #     quartus:
+  #       family : MAX 10
+  #       device : 10M08SAU169C8G
 
   mini_s7:
-    default_tool: vivado
+    flow: vivado
+    flags: {tool: vivado}
     filesets : [rtl, mini_s7]
     parameters : [clk_freq_hz=100000000]
-    tools:
-      vivado:
-        part : xc7s25ftgb196-1
+    flow_options:
+      part : xc7s25ftgb196-1
     toplevel : blinky
 
   nexys_a7:
-    default_tool: vivado
+    flow: vivado
+    flags: {tool: vivado}
     filesets : [rtl, nexys_a7]
     parameters : [clk_freq_hz=100000000]
-    tools:
-      vivado:
-        part : xc7a100tcsg324-1
+    flow_options:
+      part : xc7a100tcsg324-1
     toplevel : blinky
 
   nexys_video:
-    default_tool: vivado
+    flow: vivado
+    flags: {tool: vivado}
     filesets : [rtl, nexys_video]
     parameters : [clk_freq_hz=100000000]
-    tools:
-      vivado:
-        part : xc7a200tsbg484-1
+    flow_options:
+      part : xc7a200tsbg484-1
     toplevel : blinky
 
-  opos6ul_sp:
-    default_tool : ise
-    filesets : [rtl, opos6ul_sp]
-    parameters : [clk_freq_hz=100000000]
-    tools:
-      ise:
-        family  : Spartan6
-        device  : xc6slx9
-        package : csg225
-        speed   : -2
-    toplevel : blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `ise`.
+  # opos6ul_sp:
+  #   default_tool : ise
+  #   filesets : [rtl, opos6ul_sp]
+  #   parameters : [clk_freq_hz=100000000]
+  #   tools:
+  #     ise:
+  #       family  : Spartan6
+  #       device  : xc6slx9
+  #       package : csg225
+  #       speed   : -2
+  #   toplevel : blinky
 
-  pipistrello:
-    default_tool : ise
-    filesets : [rtl, pipistrello]
-    parameters : [clk_freq_hz=50000000]
-    tools:
-      ise:
-        family  : Spartan6
-        device  : xc6slx45
-        package : csg324
-        speed   : -3
-    toplevel : blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `ise`.
+  # pipistrello:
+  #   default_tool : ise
+  #   filesets : [rtl, pipistrello]
+  #   parameters : [clk_freq_hz=50000000]
+  #   tools:
+  #     ise:
+  #       family  : Spartan6
+  #       device  : xc6slx45
+  #       package : csg324
+  #       speed   : -3
+  #   toplevel : blinky
 
   pynq_z2:
-    default_tool: vivado
+    flow: vivado
+    flags: {tool: vivado}
     description : Pynq-Z2 Zynq Z7020 Evaluation Kit
     filesets : [rtl, pynq_z2]
-    tools:
-      vivado:
-        part : xc7z020clg400-1
+    flow_options:
+      part : xc7z020clg400-1
     toplevel : blinky_pynq_z2
 
   sim:
-    default_tool: icarus
+    vars: {tool_icarus: true}
+    flow: sim
+    flags: {tool: icarus}
     filesets : [rtl, tb]
     parameters : [clk_freq_hz, pulses]
-    tools:
-      modelsim:
-        vlog_options: [-timescale=1ns/1ns]
-      xsim:
-        xelab_options: [--timescale, 1ns/1ns]
+    flow_options:
+      tool: icarus
+      # For ModelSim and XSim, which have no flow-API implementation in
+      # Edalize 0.6.8, so no build uses them yet. Icarus Verilog ignores them.
+      vlog_options: [-timescale=1ns/1ns]
+      xelab_options: [--timescale, 1ns/1ns]
     toplevel: blinky_tb
 
   spartan_edge_accelerator_board:
-    default_tool : vivado
+    flow: vivado
+    flags: {tool: vivado}
     description : Spartan Edge Accelerator Board
     filesets : [rtl, spartan_edge_accelerator_board]
     parameters : [clk_freq_hz=100000000]
-    tools:
-      vivado:
-        part : xc7s15ftgb196-1
+    flow_options:
+      part : xc7s15ftgb196-1
     toplevel : blinky
 
   tinyfpga_bx:
-    default_tool : icestorm
+    flow: icestorm
+    flags: {tool: icestorm}
     filesets : [rtl, proginfo, tinyfpga_bx]
     hooks:
       post_run: [tinyprog]
     parameters : [clk_freq_hz=16000000]
-    tools:
-      icestorm:
-        nextpnr_options : [--lp8k, --package, cm81]
-        pnr: next
+    flow_options:
+      nextpnr_options : [--lp8k, --package, cm81]
+      pnr: next
     toplevel : blinky
 
-  ulx3s_45: &ulx3s
-    default_tool : trellis
+  ulx3s_45:
+    flow: trellis
+    flags: {tool: trellis}
     description : Radiona ULX3S board with 45k FPGA
     filesets : [rtl, proginfo, ulx3s]
     hooks:
       post_run: [ujprog]
-    tools:
-      diamond: {part: LFE5U-45F-6BG381C}
-      trellis:
-        nextpnr_options : [--package, CABGA381, --45k, --lpf, ulx3s_v20.lpf]
+    flow_options:
+      nextpnr_options : [--package, CABGA381, --45k, --lpf, ulx3s_v20.lpf]
+    # CAPI=2 also had Diamond's options, `tools: {diamond: {part:
+    # LFE5U-45F-6BG381C}}`. Diamond has no flow-API implementation in
+    # Edalize 0.6.8, and Vivado also takes `part`, so it is not a flow option.
     toplevel : blinky_ulx3s
 
   ulx3s_85:
-    <<: *ulx3s
+    extends: ulx3s_45
     description : Radiona ULX3S board with 85k FPGA
-    tools:
-      diamond: {part: LFE5U-85F-6BG381C}
-      trellis:
-        nextpnr_options : [--package, CABGA381, --85k, --lpf, ulx3s_v20.lpf]
+    flow_options:
+      nextpnr_options: [inherit: ulx3s_45, --package, CABGA381, --85k, --lpf, ulx3s_v20.lpf]
+    # CAPI=2 also had Diamond's options, `tools: {diamond: {part:
+    # LFE5U-85F-6BG381C}}`. Diamond has no flow-API implementation in
+    # Edalize 0.6.8, and Vivado also takes `part`, so it is not a flow option.
 
   upduino2:
-    default_tool : icestorm
+    flow: icestorm
+    flags: {tool: icestorm}
     filesets : [rtl, proginfo, upduino2]
     hooks:
       post_run: [iceprog]
-    tools:
-      icestorm:
-        nextpnr_options : [--up5k]
-        pnr: next
+    flow_options:
+      nextpnr_options : [--up5k]
+      pnr: next
     toplevel : blinky_upduino2
 
-  xc6sl9_hseda_eda6.1:
-    default_tool : ise
-    filesets : [rtl, xc6sl9_hseda_eda6.1]
-    parameters : [clk_freq_hz=50000000]
-    tools:
-      ise:
-        family  : Spartan6
-        device  : xc6slx9
-        package : tqg144
-        speed   : -2
-    toplevel : blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `ise`.
+  # xc6sl9_hseda_eda6.1:
+  #   default_tool : ise
+  #   filesets : [rtl, xc6sl9_hseda_eda6.1]
+  #   parameters : [clk_freq_hz=50000000]
+  #   tools:
+  #     ise:
+  #       family  : Spartan6
+  #       device  : xc6slx9
+  #       package : tqg144
+  #       speed   : -2
+  #   toplevel : blinky
 
   zcu102:
-    default_tool: vivado
+    flow: vivado
+    flags: {tool: vivado}
     description : Zynq UltraScale+ MPSoC ZCU102 Evaluation Kit
     filesets : [rtl, zcu102]
-    tools:
-      vivado:
-        part : xczu9eg-ffvb1156-2-e
+    flow_options:
+      part : xczu9eg-ffvb1156-2-e
     toplevel : blinky_zcu102
 
   zcu106:
-    default_tool: vivado
+    flow: vivado
+    flags: {tool: vivado}
     description : Zynq UltraScale+ MPSoC ZCU106 Evaluation Kit
     filesets : [rtl, zcu106]
-    tools:
-      vivado:
-        part : xczu7ev-ffvc1156-2-e
+    flow_options:
+      part : xczu7ev-ffvc1156-2-e
     toplevel : blinky_zcu106
 
-  zrtech_v2:
-    default_tool : quartus
-    filesets : [rtl, zrtech_v2]
-    parameters : [clk_freq_hz=50000000]
-    tools:
-      quartus:
-        family : Cyclone IV E
-        device : EP4CE6E22C8
-    toplevel: blinky
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # zrtech_v2:
+  #   default_tool : quartus
+  #   filesets : [rtl, zrtech_v2]
+  #   parameters : [clk_freq_hz=50000000]
+  #   tools:
+  #     quartus:
+  #       family : Cyclone IV E
+  #       device : EP4CE6E22C8
+  #   toplevel: blinky
 
-  zybo_z7-10: &zybo_z7
-    default_tool: vivado
+  zybo_z7-10:
+    flow: vivado
+    flags: {tool: vivado}
     description : Digilent Zybo Z7-10 SoC Kit
     filesets : [rtl, zybo_z7]
-    tools:
-      vivado:
-        part : xc7z010clg400-1
+    flow_options:
+      part : xc7z010clg400-1
     toplevel : blinky_zybo_z7
 
   zybo_z7-20:
-    <<: *zybo_z7
+    extends: zybo_z7-10
     description : Digilent Zybo Z7-20 SoC Kit
-    tools:
-      vivado:
-        part : xc7z020clg400-1
+    flow_options:
+      part : xc7z020clg400-1
         
 parameters:
   clk_freq_hz:

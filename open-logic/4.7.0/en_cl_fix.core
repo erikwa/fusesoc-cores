@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : open-logic:open-logic:en_cl_fix:2.4.0
 description : stable release (downloaded from GitHub);  see https://github.com/enclustra/en_cl_fix/blob/main/README.md

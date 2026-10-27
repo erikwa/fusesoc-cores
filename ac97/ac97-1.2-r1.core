@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 description: OpenCores AC97 Controller core
 filesets:
   rtl_files:
@@ -46,11 +46,16 @@ targets:
     - rtl_files
     - tb_files
   sim:
-    default_tool: icarus
+    flow: sim
+    flow_options:
+      tool: icarus
     filesets:
     - rtl_files
     - tb_files
     toplevel: test
+  # CAPI=2 ran this target with the tool given by `--tool`, which CAPI=3 does
+  # not have. It needs a `flow:` (and, for most synthesis flows, a `toplevel`
+  # and a part in `flow_options`) before it can be run.
   synth:
     filesets:
     - rtl_files

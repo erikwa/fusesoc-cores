@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name: ::altera_virtual_jtag:1.0-r1
 description: Advanced Debug System wrapper for altera virtual jtag
 

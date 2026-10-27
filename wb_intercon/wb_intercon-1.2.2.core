@@ -1,7 +1,17 @@
-CAPI=2:
+CAPI=3:
 
 name : ::wb_intercon:1.2.2
 description : Wishbone Bus Interconnect utilities
+
+# CAPI=2 selected some files by the top level's tool (`tool_<name>` flags).
+# CAPI=3 has no tool in its context, so a top level building this core with
+# that tool sets its variable: `vars: {tool_quartus: true}` in its
+# target, or `--var +tool_quartus` on the command line.
+vars:
+  tool_quartus:
+    datatype: bool
+    default: false
+    description: The top level builds with Quartus
 
 filesets:
   rtl:
@@ -12,9 +22,9 @@ filesets:
       - rtl/verilog/wb_mux.v
     file_type : verilogSource
     depend:
-      - ">=verilog-arbiter-0-r1"
-      - cdc_utils
-      - wb_common
+      - ">=::verilog-arbiter:0-r1"
+      - "::cdc_utils"
+      - "::wb_common"
 
   tb:
     files:
@@ -23,7 +33,7 @@ filesets:
       - bench/wb_arbiter_tb.v
       - bench/wb_intercon_tb.v
     file_type : verilogSource
-    depend: [">=vlog_tb_utils-1.1", ">=wb_bfm-1.1"]
+    depend: [">=::vlog_tb_utils:1.1", ">=::wb_bfm:1.1"]
 
   constraints:
     files : [data/wb_intercon.sdc: {file_type : SDC}]
@@ -65,17 +75,23 @@ generators:
 
 targets:
   default:
-    filesets: [rtl, "tool_quartus? (constraints)"]
-    tools:
-      isim:
-        fuse_options: [-d, BROKEN_CLOG2]
+    filesets: [rtl, {if: "vars.tool_quartus", add: [constraints]}]
+    # Only ISim takes `fuse_options`, so other tools ignore it, as CAPI=2's
+    # `tools: {isim: ...}` did. ISim has no flow-API implementation in Edalize
+    # 0.6.8, so no build uses it yet.
+    flow_options:
+      fuse_options: [-d, BROKEN_CLOG2]
 
+  # CAPI=2 ran this target with the tool given by `--tool`, which CAPI=3 does
+  # not have. It needs a `flow:` before it can be run, e.g. `flow: sim` with
+  # `tool: icarus` in `flow_options`, as wb_intercon 1.4.1 has.
   sim:
     filesets: [rtl, tb]
     parameters: [transactions]
-    tools:
-      isim:
-        fuse_options: [-d, BROKEN_CLOG2]
+    # For ISim, which has no flow-API implementation in Edalize 0.6.8, so no
+    # build uses it yet. Other tools ignore it.
+    flow_options:
+      fuse_options: [-d, BROKEN_CLOG2]
     toplevel: wb_intercon_tb
 
 parameters:

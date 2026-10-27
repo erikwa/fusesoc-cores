@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : ::timer:1.0-r1
 description : Simple free-running timer with Wishbone interface

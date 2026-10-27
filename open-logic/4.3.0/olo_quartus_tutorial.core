@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name : open-logic:tutorials:quartus_tutorial:4.3.0
 description : stable release (downloaded from GitHub); quartus tutorial for open-logic, targetting DE0-CV board
 
@@ -17,19 +17,21 @@ filesets:
       - "open-logic:open-logic:intf"
 
 targets:
-  default: &default
+  default:
     filesets : [rtl]
-    toplevel: ["is_toplevel? (quartus_tutorial)"]
+    toplevel: [{if: "core.is_toplevel", add: [quartus_tutorial]}]
 
-  de0_cv:
-    default_tool : quartus
-    filesets : [rtl, de0_cv]
-    tools:
-      quartus:
-        family : Cyclone V
-        device : 5CEBA4F23C7
-        board_device_index : 2
-    toplevel: quartus_tutorial
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # de0_cv:
+  #   default_tool : quartus
+  #   filesets : [rtl, de0_cv]
+  #   tools:
+  #     quartus:
+  #       family : Cyclone V
+  #       device : 5CEBA4F23C7
+  #       board_device_index : 2
+  #   toplevel: quartus_tutorial
 
 provider:
   name    : github

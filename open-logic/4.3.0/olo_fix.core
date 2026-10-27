@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : "open-logic:open-logic:fix:4.3.0"
 description : "stable release (downloaded from GitHub); Fixed point mathematics see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#fix"

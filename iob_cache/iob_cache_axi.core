@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name: iobundle:py2hwsw:iob_cache_axi:0.71
 #license: MIT

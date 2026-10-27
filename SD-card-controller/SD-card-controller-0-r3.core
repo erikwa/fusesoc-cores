@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : ::SD-card-controller:0-r3
 
@@ -56,18 +56,20 @@ targets:
     filesets : [rtl]
 
   lint:
-    default_tool: verilator
+    flow: lint
     filesets : [rtl]
-    tools:
-      verilator:
-        mode : lint-only
+    flow_options:
+      tool: verilator
+      mode : lint-only
     toplevel : sdc_controller
 
-  tb:
-    default_tool: modelsim
-    filesets: [rtl, tb]
-    parameters : [ramdisk, sd_model_log_file, wb_m_mon_log_file, wb_s_mon_log_file, wb_memory_file]
-    toplevel : sd_controller_top_tb
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `modelsim`.
+  # tb:
+  #   default_tool: modelsim
+  #   filesets: [rtl, tb]
+  #   parameters : [ramdisk, sd_model_log_file, wb_m_mon_log_file, wb_s_mon_log_file, wb_memory_file]
+  #   toplevel : sd_controller_top_tb
 
 parameters:
   ramdisk:

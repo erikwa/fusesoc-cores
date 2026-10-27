@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : ::wb_bfm:1.2.1-r1
 description : Wishbone BFM
@@ -11,7 +11,7 @@ filesets:
       - wb_bfm_memory.v
       - wb_bfm_transactor.v
     file_type : verilogSource
-    depend : [wb_common]
+    depend: ["::wb_common"]
 
   tb:
     files: [bench/wb_bfm_tb.v : {file_type : verilogSource}]
@@ -22,13 +22,17 @@ targets:
     filesets : [bfm]
 
   sim:
-    default_tool : icarus
+    vars: {tool_icarus: true}
+    flow: sim
+    flags: {tool: icarus}
     description : WB BFM testbench
     filesets : [bfm, tb]
     parameters : [transactions, subtransactions]
-    tools:
-      isim:
-        isim_options : [-d, BROKEN_CLOG2]
+    flow_options:
+      tool: icarus
+      # For ISim, which has no flow-API implementation in Edalize 0.6.8,
+      # so no build uses them yet. Icarus Verilog ignores them.
+      isim_options : [-d, BROKEN_CLOG2]
     toplevel : wb_bfm_tb
 
 parameters:

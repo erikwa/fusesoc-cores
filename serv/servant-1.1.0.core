@@ -1,6 +1,16 @@
-CAPI=2:
+CAPI=3:
 
 name : ::servant:1.1.0
+
+# CAPI=2 selected some files by the top level's tool (`tool_<name>` flags).
+# CAPI=3 has no tool in its context, so a top level building this core with
+# that tool sets its variable: `vars: {tool_quartus: true}` in its
+# target, or `--var +tool_quartus` on the command line.
+vars:
+  tool_quartus:
+    datatype: bool
+    default: false
+    description: The top level builds with Quartus
 
 filesets:
   service:
@@ -20,7 +30,7 @@ filesets:
       - bench/uart_decoder.v
       - bench/servant_tb.v
     file_type : verilogSource
-    depend : [vlog_tb_utils]
+    depend: ["::vlog_tb_utils"]
 
   verilator_tb:
     files:
@@ -35,11 +45,14 @@ filesets:
       - servant/servant_gpio.v
       - servant/servant_arbiter.v
       - servant/servant_mux.v
-      -  "tool_quartus? (servant/servant_ram_quartus.sv)" : {file_type : systemVerilogSource}
-      - "!tool_quartus? (servant/servant_ram.v)"
+      - if: "vars.tool_quartus"
+        add:
+          - servant/servant_ram_quartus.sv: {file_type: systemVerilogSource}
+      - if: "!vars.tool_quartus"
+        add: [servant/servant_ram.v]
       - servant/servant.v
     file_type : verilogSource
-    depend : [serv]
+    depend: ["::serv"]
 
   cyc1000:
     files:
@@ -150,185 +163,205 @@ targets:
   default:
     filesets : [soc]
 
-  cyc1000:
-    default_tool: quartus
-    description: cyc1000 FPGA board
-    filesets : [mem_files, soc, cyc1000]
-    parameters : [memfile, memsize=32768]
-    tools:
-      quartus:
-        family : Cyclone 10 LP
-        device : 10CL025YU256C8G
-    toplevel : servclone10
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # cyc1000:
+  #   default_tool: quartus
+  #   description: cyc1000 FPGA board
+  #   filesets : [mem_files, soc, cyc1000]
+  #   parameters : [memfile, memsize=32768]
+  #   tools:
+  #     quartus:
+  #       family : Cyclone 10 LP
+  #       device : 10CL025YU256C8G
+  #   toplevel : servclone10
 
-  sockit:
-    default_tool : quartus
-    description: SoCKit development kit by Arrow / Terasic
-    filesets : [mem_files, soc, sockit]
-    parameters : [memfile, memsize]
-    tools:
-      quartus:
-        family : CycloneV
-        device : 5CSXFC6D6F31C6
-    toplevel: servive
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # sockit:
+  #   default_tool : quartus
+  #   description: SoCKit development kit by Arrow / Terasic
+  #   filesets : [mem_files, soc, sockit]
+  #   parameters : [memfile, memsize]
+  #   tools:
+  #     quartus:
+  #       family : CycloneV
+  #       device : 5CSXFC6D6F31C6
+  #   toplevel: servive
 
-  deca:
-    default_tool : quartus
-    description: DECA development kit by Arrow / Terasic
-    filesets : [mem_files, soc, deca]
-    parameters : [memfile, memsize]
-    tools:
-      quartus:
-        family : MAX 10
-        device : 10M50DAF484C6GES
-    toplevel: servive
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # deca:
+  #   default_tool : quartus
+  #   description: DECA development kit by Arrow / Terasic
+  #   filesets : [mem_files, soc, deca]
+  #   parameters : [memfile, memsize]
+  #   tools:
+  #     quartus:
+  #       family : MAX 10
+  #       device : 10M50DAF484C6GES
+  #   toplevel: servive
    
-  de0_nano:
-    default_tool : quartus
-    filesets : [mem_files, soc, de0_nano]
-    parameters : [memfile, memsize]
-    tools:
-      quartus:
-        family : Cyclone IV E
-        device : EP4CE22F17C6
-    toplevel: servive
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # de0_nano:
+  #   default_tool : quartus
+  #   filesets : [mem_files, soc, de0_nano]
+  #   parameters : [memfile, memsize]
+  #   tools:
+  #     quartus:
+  #       family : Cyclone IV E
+  #       device : EP4CE22F17C6
+  #   toplevel: servive
 
-  de10_nano:
-    default_tool: quartus
-    description: Terasic DE10 Nano Kit
-    filesets : [mem_files, soc, de10_nano]
-    parameters : [memfile, memsize=32768]
-    tools:
-      quartus:
-        family : Cyclone V
-        device : 5CSEBA6U23I7
-        board_device_index : 2
-    toplevel : servive
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `quartus`.
+  # de10_nano:
+  #   default_tool: quartus
+  #   description: Terasic DE10 Nano Kit
+  #   filesets : [mem_files, soc, de10_nano]
+  #   parameters : [memfile, memsize=32768]
+  #   tools:
+  #     quartus:
+  #       family : Cyclone V
+  #       device : 5CSEBA6U23I7
+  #       board_device_index : 2
+  #   toplevel : servive
 
   icebreaker:
-    default_tool : icestorm
+    flow: icestorm
+    flags: {tool: icestorm}
     filesets : [mem_files, soc, service, icebreaker]
     generate: [icebreaker_pll]
     parameters : [memfile, memsize, PLL=ICE40_PAD]
-    tools:
-      icestorm:
-        nextpnr_options: [--up5k, --freq, 16]
-        pnr: next
+    flow_options:
+      nextpnr_options: [--up5k, --freq, 16]
+      pnr: next
     toplevel : service
 
   icesugar:
-    default_tool : icestorm
+    flow: icestorm
+    flags: {tool: icestorm}
     description : iCE40UP5K Development Board by MuseLab
     filesets : [mem_files, soc, service, icesugar]
     generate: [icesugar_pll]
     parameters : [memfile, memsize, PLL=ICE40_PAD]
-    tools:
-      icestorm:
-        nextpnr_options: [--up5k, --package, sg48, --freq, 32]
-        pnr: next
+    flow_options:
+      nextpnr_options: [--up5k, --package, sg48, --freq, 32]
+      pnr: next
     toplevel : service
 
-  lx9_microboard:
-    default_tool: ise
-    description : LX9 Microboard
-    filesets : [mem_files, soc, lx9_microboard]
-    parameters : [memfile, memsize]
-    tools:
-      ise:
-        family  : Spartan6
-        device  : xc6slx9
-        package : csg324
-        speed   : -2
-    toplevel : servant_lx9
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `ise`.
+  # lx9_microboard:
+  #   default_tool: ise
+  #   description : LX9 Microboard
+  #   filesets : [mem_files, soc, lx9_microboard]
+  #   parameters : [memfile, memsize]
+  #   tools:
+  #     ise:
+  #       family  : Spartan6
+  #       device  : xc6slx9
+  #       package : csg324
+  #       speed   : -2
+  #   toplevel : servant_lx9
 
   tinyfpga_bx:
-    default_tool : icestorm
+    flow: icestorm
+    flags: {tool: icestorm}
     filesets : [mem_files, soc, service, tinyfpga_bx]
     generate: [tinyfpga_bx_pll]
     parameters : [memfile, memsize, PLL=ICE40_CORE]
-    tools:
-      icestorm:
-        nextpnr_options : [--lp8k, --package, cm81, --freq, 32]
-        pnr: next
+    flow_options:
+      nextpnr_options : [--lp8k, --package, cm81, --freq, 32]
+      pnr: next
     toplevel : service
 
   alhambra:
-    default_tool : icestorm
+    flow: icestorm
+    flags: {tool: icestorm}
     description: Open-hardware iCE40HX4K FPGA board
     filesets : [mem_files, soc, service, alhambra]
     generate: [alhambra_pll]
     parameters : [memfile, memsize, PLL=ICE40_CORE]
-    tools:
-      icestorm:
-        nextpnr_options : [--hx8k, --package, "tq144:4k", --freq, 32]
-        pnr: next
+    flow_options:
+      nextpnr_options : [--hx8k, --package, "tq144:4k", --freq, 32]
+      pnr: next
     toplevel : service
 
   lint:
-    default_tool : verilator
+    vars: {tool_verilator: true}
+    flow: lint
+    flags: {tool: verilator}
     filesets : [soc]
-    tools:
-      verilator:
-        mode : lint-only
+    flow_options:
+      tool: verilator
+      mode : lint-only
     toplevel : servant
 
   nexys_a7:
-    default_tool: vivado
+    flow: vivado
+    flags: {tool: vivado}
     filesets : [mem_files, soc, nexys_a7]
     parameters : [memfile, memsize, frequency=32]
-    tools:
-      vivado: {part : xc7a100tcsg324-1}
+    flow_options: {part: xc7a100tcsg324-1}
     toplevel : servix
 
   cmod_a7_35t:
-    default_tool: vivado
+    flow: vivado
+    flags: {tool: vivado}
     filesets : [mem_files, soc, cmod_a7_35t]
     parameters : [memfile=blinky.hex, memsize, frequency=12]
-    tools:
-      vivado: {part : xc7a35tcpg236-1}
+    flow_options: {part: xc7a35tcpg236-1}
     toplevel : servix
 
   arty_a7_35t:
-    default_tool: vivado
+    flow: vivado
+    flags: {tool: vivado}
     filesets : [mem_files, soc, arty_a7_35t]
     parameters : [memfile, memsize, frequency=16]
-    tools:
-      vivado: {part : xc7a35ticsg324-1L}
+    flow_options: {part: xc7a35ticsg324-1L}
     toplevel : servix
 
   ac701:
-    default_tool: vivado
+    flow: vivado
+    flags: {tool: vivado}
     filesets : [mem_files, soc, ac701]
     parameters : [memfile, memsize, frequency=32]
-    tools:
-      vivado: {part : xc7a200t-fbg676-2}
+    flow_options: {part: xc7a200t-fbg676-2}
     toplevel : servant_ac701
 
   orangecrab_r0.2:
-    default_tool: trellis
+    flow: trellis
+    flags: {tool: trellis}
     description : OrangeCrab R0.2
     filesets : [mem_files, soc, orangecrab]
     parameters : [memfile, memsize]
-    tools:
-      trellis:
-        nextpnr_options : [--package, CSFBGA285, --25k]
+    flow_options:
+      nextpnr_options : [--package, CSFBGA285, --25k]
     toplevel: servant_orangecrab
 
-  pipistrello:
-    default_tool: ise
-    description : Saanlima pipistrello
-    filesets : [mem_files, soc, pipistrello]
-    parameters : [memfile, memsize]
-    tools:
-      ise:
-        family  : Spartan6
-        device  : xc6slx45
-        package : csg324
-        speed   : -3
-    toplevel : servis
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `ise`.
+  # pipistrello:
+  #   default_tool: ise
+  #   description : Saanlima pipistrello
+  #   filesets : [mem_files, soc, pipistrello]
+  #   parameters : [memfile, memsize]
+  #   tools:
+  #     ise:
+  #       family  : Spartan6
+  #       device  : xc6slx45
+  #       package : csg324
+  #       speed   : -3
+  #   toplevel : servis
 
   sim:
-    default_tool: icarus
+    vars: {tool_icarus: true}
+    flow: sim
+    flags: {tool: icarus}
+    flow_options:
+      tool: icarus
     filesets : [soc, servant_tb]
     parameters :
       - RISCV_FORMAL
@@ -337,30 +370,34 @@ targets:
       - memsize
     toplevel : servant_tb
 
-  ulx3s_85:
-    default_tool: diamond
-    description : ULX3S 85k version
-    filesets : [mem_files, soc, ulx3s]
-    parameters : [memfile, memsize]
-    tools:
-      diamond:
-        part : LFE5U-85F-6BG381C
-      trellis:
-        nextpnr_options : [--package, CABGA381, --85k]
-    toplevel: servant_ecp5
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `diamond`.
+  # ulx3s_85:
+  #   default_tool: diamond
+  #   description : ULX3S 85k version
+  #   filesets : [mem_files, soc, ulx3s]
+  #   parameters : [memfile, memsize]
+  #   tools:
+  #     diamond:
+  #       part : LFE5U-85F-6BG381C
+  #     trellis:
+  #       nextpnr_options : [--package, CABGA381, --85k]
+  #   toplevel: servant_ecp5
 
   upduino2:
-    default_tool : icestorm
+    flow: icestorm
+    flags: {tool: icestorm}
     filesets : [mem_files, soc, upduino2]
     parameters : [memfile, memsize]
-    tools:
-      icestorm:
-        nextpnr_options: [--package, sg48, --up5k, --freq, 24]
-        pnr: next
+    flow_options:
+      nextpnr_options: [--package, sg48, --up5k, --freq, 24]
+      pnr: next
     toplevel : servant_upduino2
 
   verilator_tb:
-    default_tool: verilator
+    vars: {tool_verilator: true}
+    flow: sim
+    flags: {tool: verilator}
     filesets : [soc, verilator_tb]
     parameters :
       - RISCV_FORMAL
@@ -371,38 +408,38 @@ targets:
       - uart_baudrate
       - vcd
       - vcd_start
-    tools:
-      verilator:
-        verilator_options : [--trace]
+    flow_options:
+      tool: verilator
+      verilator_options : [--trace]
     toplevel : servant_sim
 
   zcu106:
-    default_tool: vivado
+    flow: vivado
+    flags: {tool: vivado}
     description : Zynq UltraScale+ MPSoC ZCU106 Evaluation Kit
     filesets : [mem_files, soc, zcu106]
     parameters : [memfile, memsize]
-    tools:
-      vivado: {part : xczu7ev-ffvc1156-2-e}
+    flow_options: {part: xczu7ev-ffvc1156-2-e}
     toplevel : servus
 
   icestick:
-    default_tool : icestorm
+    flow: icestorm
+    flags: {tool: icestorm}
     filesets : [mem_files, soc, service, icestick]
     generate: [icestick_pll]
     parameters : [memfile=blinky.hex, memsize=7168, PLL=ICE40_CORE]
-    tools:
-      icestorm:
-        nextpnr_options : [--hx1k, --package, tq144, --freq, 32]
-        pnr: next
+    flow_options:
+      nextpnr_options : [--hx1k, --package, tq144, --freq, 32]
+      pnr: next
     toplevel : service
 
   go_board:
-    default_tool : icestorm
+    flow: icestorm
+    flags: {tool: icestorm}
     filesets : [mem_files, soc, go_board]
-    tools:
-      icestorm:
-        nextpnr_options : [--hx1k, --package, vq100, --freq, 20]
-        pnr: next
+    flow_options:
+      nextpnr_options : [--hx1k, --package, vq100, --freq, 20]
+      pnr: next
     toplevel : service_go_board
 
 parameters:

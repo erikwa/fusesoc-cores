@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : pulp-platform.org::axi:0.6
 
@@ -34,17 +34,21 @@ targets:
     filesets : [rtl]
 
   lint:
-    default_tool : verilator
+    vars: {tool_verilator: true}
+    flow: lint
+    flags: {tool: verilator}
     filesets : [rtl]
-    tools:
-      verilator:
-        mode: lint-only
+    flow_options:
+      tool: verilator
+      mode: lint-only
     toplevel: axi_lite_xbar
-  sim:
-    default_tool : modelsim
-    filesets: [rtl, tb]
-    toplevel : tb_axi_lite_xbar
 
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `modelsim`.
+  # sim:
+  #   default_tool : modelsim
+  #   filesets: [rtl, tb]
+  #   toplevel : tb_axi_lite_xbar
 provider:
   name    : github
   user    : pulp-platform

@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name: ::or1ksim_trace:1.0
 description: "OpenRISC instruction trace routines from or1ksim"
@@ -16,9 +16,10 @@ targets:
   default:
     filesets: [verilator_tb]
     parameters: [trace_enable]
-    tools:
-      verilator:
-        verilator_options: ["-CFLAGS -DOR1KSIM_TRACE_STANDALONE"]
+    # Only Verilator takes `verilator_options`, so other tools ignore it, as
+    # CAPI=2's `tools: {verilator: ...}` did.
+    flow_options:
+      verilator_options: ["-CFLAGS -DOR1KSIM_TRACE_STANDALONE"]
 
 parameters:
   trace_enable:

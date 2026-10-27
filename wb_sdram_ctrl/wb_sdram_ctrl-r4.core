@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name : ::wb_sdram_ctrl:0-r4
 filesets:
   rtl:
@@ -17,8 +17,7 @@ filesets:
   tb:
     files : [bench/wb_sdram_ctrl_tb.v]
     file_type : verilogSource
-    depend:
-      [mt48lc16m16a2, ">=vlog_tb_utils-1.0", ">=wb_bfm-1.0"]
+    depend: ["::mt48lc16m16a2", ">=::vlog_tb_utils:1.0", ">=::wb_bfm:1.0"]
 
 parameters:
   transactions:
@@ -47,30 +46,32 @@ parameters:
 targets:
   default:
     filesets: [rtl]
-  sim: &sim
-    default_tool : icarus
+  sim:
+    vars: {tool_icarus: true}
+    flow: sim
+    flags: {tool: icarus}
     filesets   : [rtl, tb]
     parameters : [transactions, subtransactions, seed, technology]
-    tools:
-      modelsim:
-        vlog_options : [-timescale=1ns/1ps]
-        vsim_options : [-t, 1ps]
+    flow_options:
+      tool: icarus
+      # For ModelSim, which has no flow-API implementation in Edalize 0.6.8,
+      # so no build uses them yet. Icarus Verilog ignores them.
+      vlog_options : [-timescale=1ns/1ps]
+      vsim_options : [-t, 1ps]
     toplevel   : [wb_sdram_ctrl_tb]
   sim_altsyncram:
-    <<: *sim
+    extends: sim
     parameters : [transactions, subtransactions, seed, technology=ALTERA]
-    tools:
-      icarus:
-        iverilog_options : [-l, $(QUARTUS_ROOTDIR)/eda/sim_lib/altera_mf.v]
-      modelsim:
-        vlog_options : [-timescale=1ns/1ps]
-        vsim_options : [-t, 1ps, -L, altera_mf_ver]
+    flow_options:
+      iverilog_options : [-l, $(QUARTUS_ROOTDIR)/eda/sim_lib/altera_mf.v]
+      # CAPI=2 appended these to the ModelSim options of `sim`.
+      vlog_options: [inherit: sim, -timescale=1ns/1ps]
+      vsim_options: [inherit: sim, -t, 1ps, -L, altera_mf_ver]
   sim_ecp5:
-    <<: *sim
+    extends: sim
     parameters : [transactions, subtransactions, seed, technology=ECP5, USE_LATTICE_GSR_PUR=true]
-    tools:
-      icarus:
-        iverilog_options : [-y, $(FOUNDRY)/verilog/data/ecp5u]
+    flow_options:
+      iverilog_options : [-y, $(FOUNDRY)/verilog/data/ecp5u]
 
 
 provider:

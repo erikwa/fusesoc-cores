@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : "open-logic:open-logic:axi:4.4.0"
 description : "stable release (downloaded from GitHub); AXI related modules see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#axi"

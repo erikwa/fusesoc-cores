@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : chipsalliance.org:cores:SweRV_EL2:1.2
 description : SweRV EL2 RISC-V Core
@@ -56,25 +56,30 @@ targets:
   default:
     filesets :
       - rtl
-      - "tool_vivado ? (vivado_tcl)"
+      # CAPI=2 added this with the `tool_vivado` flag. Vivado runs in the
+      # `vivado` flow only, so this is conditioned on that flow.
+      - if: "flow == 'vivado'"
+        add: [vivado_tcl]
   lint:
-    default_tool: verilator
+    vars: {tool_verilator: true}
+    flow: lint
+    flags: {tool: verilator}
     filesets : [rtl]
     generate : [swerv_default_config]
-    tools:
-      verilator :
-        mode : lint-only
+    flow_options:
+      tool: verilator
+      mode : lint-only
     toplevel : el2_swerv_wrapper
 
   synth:
-    default_tool : vivado
+    flow: vivado
+    flags: {tool: vivado}
     filesets : [rtl, vivado_tcl]
     generate : [swerv_default_config]
     parameters : [RV_FPGA_OPTIMIZE]
-    tools:
-      vivado:
-        part : xc7a100tcsg324-1
-        pnr  : none
+    flow_options:
+      part : xc7a100tcsg324-1
+      pnr  : none
     toplevel : el2_swerv_wrapper
 
 generate:

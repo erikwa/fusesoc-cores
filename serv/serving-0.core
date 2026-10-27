@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : ::serving:0
 
@@ -10,18 +10,20 @@ filesets:
       - serving/serving_ram.v
       - serving/serving.v
     file_type : verilogSource
-    depend : [serv]
+    depend: ["::serv"]
 
 targets:
   default:
     filesets : [rtl]
 
   lint:
-    default_tool : verilator
+    vars: {tool_verilator: true}
+    flow: lint
+    flags: {tool: verilator}
     filesets : [rtl]
-    tools:
-      verilator:
-        mode : lint-only
+    flow_options:
+      tool: verilator
+      mode : lint-only
     toplevel : serving
 
 provider:

@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name: ::wb_ram:1.1-r1
 description: Wishbone RAM with selectable backends
@@ -27,7 +27,11 @@ targets:
     filesets: [rtl]
 
   sim:
-    default_tool: icarus
+    vars: {tool_icarus: true}
+    flow: sim
+    flags: {tool: icarus}
+    flow_options:
+      tool: icarus
     description : WB RAM testbench
     filesets: [rtl, tb]
     parameters: [transactions]

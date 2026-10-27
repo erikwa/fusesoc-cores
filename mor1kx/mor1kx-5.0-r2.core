@@ -1,7 +1,33 @@
-CAPI=2:
+CAPI=3:
 
 name : ::mor1kx:5.0-r2
 #description : mor1kx - an OpenRISC processor IP core
+
+# CAPI=2 selected some files by the top level's tool (`tool_<name>` flags).
+# CAPI=3 has no tool in its context, so a top level building this core with
+# that tool sets its variable: `vars: {tool_icarus: true}` in its
+# target, or `--var +tool_icarus` on the command line.
+vars:
+  tool_icarus:
+    datatype: bool
+    default: false
+    description: The top level builds with Icarus Verilog
+  tool_isim:
+    datatype: bool
+    default: false
+    description: The top level builds with ISim
+  tool_modelsim:
+    datatype: bool
+    default: false
+    description: The top level builds with ModelSim
+  tool_rivierapro:
+    datatype: bool
+    default: false
+    description: The top level builds with Riviera-PRO
+  tool_xsim:
+    datatype: bool
+    default: false
+    description: The top level builds with XSim
 
 filesets:
   core:
@@ -81,11 +107,8 @@ targets:
     filesets:
       - core
       - fpu
-      - "tool_icarus? (monitor)"
-      - "tool_isim? (monitor)"
-      - "tool_modelsim? (monitor)"
-      - "tool_rivierapro? (monitor)"
-      - "tool_xsim? (monitor)"
+      - if: "vars.tool_icarus || vars.tool_isim || vars.tool_modelsim || vars.tool_rivierapro || vars.tool_xsim"
+        add: [monitor]
     parameters: [trace_enable, trace_to_screen]
 
 provider:

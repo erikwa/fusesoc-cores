@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name : pulp-platform.org::axi_mem_if:0.2.0
 
 filesets:

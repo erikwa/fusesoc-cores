@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name: openfpga:cores:sofa-qlhd:1.0
 description: Hard-IP 12x12 FPGA core, Skywater Open-source FpgA (SOFA), QuickLogic' soft-adder and high-density design

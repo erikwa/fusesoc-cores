@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : "open-logic:open-logic:intf:4.5.0"
 description : "stable release (downloaded from GitHub); Interfaces (e.g. I2C, synchronizer, SPI, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#intf"
@@ -30,7 +30,10 @@ targets:
   default:
     filesets :
       - "rtl"
-      - "tool_vivado? (scoped_constraints)"
+      # CAPI=2 added this with the `tool_vivado` flag. Vivado runs in the
+      # `vivado` flow only, so this is conditioned on that flow.
+      - if: "flow == 'vivado'"
+        add: [scoped_constraints]
 provider:
   name    : github
   user    : open-logic

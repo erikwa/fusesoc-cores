@@ -1,6 +1,16 @@
-CAPI=2:
+CAPI=3:
 name: ::cdc_utils:0.1-r1
 description: Verilog CDC implementations
+
+# CAPI=2 selected some files by the top level's tool (`tool_<name>` flags).
+# CAPI=3 has no tool in its context, so a top level building this core with
+# that tool sets its variable: `vars: {tool_quartus: true}` in its
+# target, or `--var +tool_quartus` on the command line.
+vars:
+  tool_quartus:
+    datatype: bool
+    default: false
+    description: The top level builds with Quartus
 
 filesets:
   rtl:
@@ -13,7 +23,7 @@ filesets:
 
 targets:
   default:
-    filesets: [rtl, "tool_quartus? (sdc)"]
+    filesets: [rtl, {if: "vars.tool_quartus", add: [sdc]}]
 
 provider:
   name: github

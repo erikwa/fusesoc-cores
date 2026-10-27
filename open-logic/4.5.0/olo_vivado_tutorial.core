@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name : open-logic:tutorials:vivado_tutorial:4.5.0
 description : stable release (downloaded from GitHub); vivado tutorial for open-logic, targetting Zybo Z7-10 board
 
@@ -18,15 +18,15 @@ filesets:
 targets:
   default: &default
     filesets : [rtl]
-    toplevel: ["is_toplevel? (vivado_tutorial)"]
+    toplevel: [{if: "core.is_toplevel", add: [vivado_tutorial]}]
     
   zybo_z7: 
-    default_tool: vivado
+    flow: vivado
+    flags: {tool: vivado}
     description : Digilent Zybo Z7-10 SoC Kit
     filesets : [rtl, zybo_z7]
-    tools:
-      vivado:
-        part : xc7z010clg400-1
+    flow_options:
+      part : xc7z010clg400-1
     toplevel : vivado_tutorial
 
 provider:

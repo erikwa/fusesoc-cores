@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name : ::verilog-arbiter:0-r3
 description : Verilog arbiter
 

@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name: openfpga:cores:sofa-chd:1.0
 description: Hard-IP 12x12 FPGA core, Skywater Open-source FpgA (SOFA), custom high-density design

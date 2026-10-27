@@ -1,7 +1,17 @@
-CAPI=2:
+CAPI=3:
 
 name : ::jtag_vpi:0-r3
 description : TCP/IP controlled VPI JTAG Interface
+
+# CAPI=2 selected some files by the top level's tool (`tool_<name>` flags).
+# CAPI=3 has no tool in its context, so a top level building this core with
+# that tool sets its variable: `vars: {tool_verilator: true}` in its
+# target, or `--var +tool_verilator` on the command line.
+vars:
+  tool_verilator:
+    datatype: bool
+    default: false
+    description: The top level builds with Verilator
 
 filesets :
   common :
@@ -19,15 +29,23 @@ filesets :
       - jtagServer.h : {is_include_file : true}
     file_type : cppSource
 
-vpi:
-  jtag_vpi: {filesets : [common, vpi]}
+# CAPI=3 has no `vpi:`. Only Edalize's Tool API built VPI libraries, and the
+# flow API, the only one CAPI=3 has, ignores them. Building the library again
+# needs a generator that emits its sources and build rules (specification
+# §7.6). Until then the VPI sources are still added to non-Verilator builds,
+# but not compiled into a VPI library. The CAPI=2 core had:
+#
+# vpi:
+#   jtag_vpi: {filesets : [common, vpi]}
 
 targets :
   default:
     filesets :
       - common
-      - "tool_verilator? (verilator)"
-      - "!tool_verilator? (vpi)"
+      - if: "vars.tool_verilator"
+        add: [verilator]
+      - if: "!vars.tool_verilator"
+        add: [vpi]
     parameters: [jtag_vpi_enable]
 
 parameters:

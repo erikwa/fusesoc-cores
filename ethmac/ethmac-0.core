@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 name : ::ethmac:0-r1
 
 filesets:
@@ -43,19 +43,18 @@ targets:
       filesets : [includes, rtl]
 
    lint:
-      default_tool : verilator
+      flow : lint
       filesets : [includes, rtl]
-      tools:
-        verilator :
-           mode : lint-only
+      flow_options:
+        tool : verilator
+        mode : lint-only
       toplevel : ethmac
 
    synth:
-      default_tool : vivado
+      flow : vivado
       filesets : [includes, rtl]
-      tools:
-        vivado:
-          part : xc7a100tcsg324-1
+      flow_options:
+        part : xc7a100tcsg324-1
       toplevel : ethmac
 
 provider:

@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name: iobundle:py2hwsw:iob_eth:0.1
 #license: MIT

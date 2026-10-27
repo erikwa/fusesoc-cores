@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 
 name : ::serv:1.0.0
 
@@ -26,14 +26,14 @@ targets:
   default:
     filesets : [core]
     parameters : [RISCV_FORMAL, SERV_CLEAR_RAM]
-    toplevel : ["is_toplevel? (serv_rf_top)"]
+    toplevel: [{if: "core.is_toplevel", add: [serv_rf_top]}]
 
   lint:
-    default_tool : verilator
+    flow: lint
     filesets : [core]
-    tools:
-      verilator:
-        mode : lint-only
+    flow_options:
+      tool: verilator
+      mode : lint-only
     toplevel : serv_rf_top
 
 parameters:
