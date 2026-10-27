@@ -8,11 +8,11 @@ and Edalize 0.6.8.
 
 | | Count |
 |---|---|
-| Core files | 185 |
-| Converted to CAPI=3 | 185 |
+| Core files | 180 |
+| Converted to CAPI=3 | 180 |
 | … of which with targets left unconverted | 25 |
 | Left on CAPI=2 | 0 |
-| Cores that load (`fusesoc core list`) | 185 |
+| Cores that load (`fusesoc core list`) | 180 |
 
 `fusesoc run --setup` of every target with a flow (197), compared with the EDAM
 CAPI=2 produces for the same target:
@@ -33,6 +33,14 @@ CAPI=2 produces for the same target:
   dependency conflict (wb_sdram_ctrl r3 `sim`, r4 `sim`, `sim_altsyncram`, `sim_ecp5`)
   and a missing nextpnr chipdb (mor1kx 5.2 `synth`).
 - **Not tested:** only setup was run; nothing was compiled, simulated or synthesized.
+
+## Duplicate cores removed
+
+open-logic 4.2.0 to 4.6.0 each shipped `en_cl_fix.core` with the same VLNV,
+`open-logic:open-logic:en_cl_fix:2.3.2`. FuseSoC keeps only one core per VLNV and warned
+on every load. Only the copy in 4.6.0 is kept now, which is the one FuseSoC used
+anyway. It fetches its sources from GitHub, so every release's `olo_fix` still resolves
+it.
 
 ## Targets not converted
 
