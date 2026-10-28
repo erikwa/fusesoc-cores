@@ -1,0 +1,120 @@
+CAPI=3:
+name: erikwa:demo:automaton:1.0.0
+description: A one-dimensional cellular automaton drawn as ASCII art by verilator
+
+vars:
+  pattern:
+    datatype: enum
+    values: [sierpinski, chaos, complex]
+    default: sierpinski
+    description: Picks the rule and where the first live cell is (override the rule with --RULE)
+
+let:
+  # A CEL map literal, indexed by an enum var
+  rules: "{'sierpinski': 90, 'chaos': 30, 'complex': 110}"
+  # Rule 110 grows to the left, so it starts from the rightmost cell
+  starts_right: "vars.pattern == 'complex'"
+  # The rule's Wolfram code as 8 binary digits, its output for {left, self,
+  # right} = 7 down to 0
+  rule_bits: "lists.range(8).map(i, string(math.bitAnd(math.bitShiftRight(parameters.RULE, 7 - i), 1))).join('')"
+
+parameters:
+  RULE:
+    datatype: int
+    paramtype: vlogparam
+    default: "${locals.rules[vars.pattern]}"
+    description: Wolfram code of the rule, 0-255
+  WIDTH:
+    datatype: int
+    paramtype: vlogparam
+    # The terminal width when the shell exports it, else 80
+    default: "${has(env.COLUMNS) ? int(env.COLUMNS) : 80}"
+    description: Number of cells
+  SEED_POS:
+    datatype: int
+    paramtype: vlogparam
+    default: "${locals.starts_right ? 0 : parameters.WIDTH / 2}"
+    description: Index of the first live cell, 0 is the rightmost
+  GENERATIONS:
+    datatype: int
+    paramtype: vlogparam
+    default: "${parameters.WIDTH / 2}"
+    description: Number of rows to print
+  GEN_BITS:
+    datatype: int
+    paramtype: vlogparam
+    # Wide enough to count to GENERATIONS, follows a --GENERATIONS override
+    default: "${math.clog2(parameters.GENERATIONS + 1)}"
+    description: Width of the testbench's generation counter
+  TITLE:
+    datatype: str
+    paramtype: vlogparam
+    # No spaces: verilator's .vc file would split the value on them
+    default: "${[vars.pattern.upperAscii(), 'rule', string(parameters.RULE), locals.rule_bits].join('-')}"
+    description: Printed above the pattern
+
+assert:
+  - condition: "parameters.RULE >= 0 && parameters.RULE <= 255"
+    message: "RULE must be 0-255 (got ${parameters.RULE})"
+  - condition: "parameters.SEED_POS >= 0 && parameters.SEED_POS < parameters.WIDTH"
+    message: "SEED_POS ${parameters.SEED_POS} is outside the ${parameters.WIDTH} cells"
+
+filesets:
+  rtl:
+    files: [rtl/automaton.v]
+    file_type: verilogSource
+  tb:
+    files: [tb/automaton_tb.v]
+    file_type: verilogSource
+
+targets:
+  # Shared by the targets below, cannot be selected itself
+  base:
+    abstract: true
+    filesets: [rtl]
+    parameters: [RULE, WIDTH, SEED_POS]
+    toplevel: automaton
+    flow_options:
+      tool: verilator
+
+  sim:
+    extends: base
+    description: Simulate with verilator and print the pattern
+    flow: sim
+    filesets:
+      - inherit: base
+      - tb
+    parameters:
+      - inherit: base
+      - GENERATIONS
+      - GEN_BITS
+      - TITLE
+    toplevel: automaton_tb
+    flow_options:
+      mode: binary
+    # Only the testbench counts generations, so only sim checks the counter
+    assert:
+      - condition: "math.bitShiftLeft(1, parameters.GEN_BITS) > parameters.GENERATIONS"
+        message: "GEN_BITS ${parameters.GEN_BITS} cannot count to ${parameters.GENERATIONS}"
+
+  # `fusesoc run erikwa:demo:automaton` draws a Sierpinski triangle
+  default:
+    extends: sim
+
+  # Target vars outrank the core's defaults but not --var
+  rule110:
+    extends: sim
+    description: Rule 110, which is Turing complete
+    vars: {pattern: complex}
+
+  lint:
+    extends: base
+    description: Lint the RTL with all verilator warnings
+    flow: lint
+    flow_options:
+      verilator_options: [-Wall]
+
+  # The old name of sim
+  run:
+    extends: sim
+    deprecated: use the sim target
