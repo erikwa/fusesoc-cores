@@ -1,0 +1,193 @@
+CAPI=3:
+name: erikwa:demo:fractal:1.0.0
+description: Mandelbrot and Julia sets in fixed point, drawn as ASCII art by verilator
+
+vars:
+  fractal:
+    datatype: enum
+    values: [mandelbrot, julia]
+    default: mandelbrot
+    description: Which set to draw (the julia target also centers the view)
+  re:
+    datatype: real
+    default: -0.75
+    description: Real part of the view's center
+  im:
+    datatype: real
+    default: 0.0
+    description: Imaginary part of the view's center
+  zoom:
+    datatype: real
+    default: 1.0
+    description: Magnification, 1.0 shows 3.5 units across
+  c_re:
+    datatype: real
+    default: -0.8
+    description: Real part of the Julia constant c
+  c_im:
+    datatype: real
+    default: 0.156
+    description: Imaginary part of the Julia constant c
+  palette:
+    datatype: enum
+    values: [shades, digits, solid]
+    default: shades
+    description: Characters for slow-escaping pixels and the set itself
+
+let:
+  palettes: "{'shades': '.:-=+*#%@', 'digits': '123456789', 'solid': '#'}"
+  # 1.0 in fixed point, as a double to scale the real vars with
+  one: "double(math.bitShiftLeft(1, parameters.FRAC))"
+  # Distance between two columns in the complex plane
+  step: "3.5 / vars.zoom / double(parameters.COLS)"
+
+parameters:
+  COLS:
+    datatype: int
+    paramtype: vlogparam
+    default: 80
+    description: Characters per row
+  ROWS:
+    datatype: int
+    paramtype: vlogparam
+    default: "${parameters.COLS * 2 / 5}"
+    description: Rows to print
+  MAX_ITER:
+    datatype: int
+    paramtype: vlogparam
+    # Deeper zooms need more iterations to tell the set from its edge
+    default: "${int(64.0 * (1.0 + math.log2(math.greatest(vars.zoom, 1.0))))}"
+    description: Iterations before a pixel counts as inside the set
+  ITER_BITS:
+    datatype: int
+    paramtype: vlogparam
+    default: "${math.clog2(parameters.MAX_ITER + 1)}"
+    description: Width of the iteration counter
+  BITS:
+    datatype: int
+    paramtype: vlogparam
+    default: 32
+    description: Width of the fixed-point datapath, 8-32
+  FRAC:
+    datatype: int
+    paramtype: vlogparam
+    # Sign and five integer bits: z^2 + c stays below 32 while |z| <= 2
+    default: "${parameters.BITS - 6}"
+    description: Fraction bits of the fixed-point datapath
+  DX:
+    datatype: int
+    paramtype: vlogparam
+    default: "${int(locals.step * locals.one)}"
+    description: Column step in fixed point
+  DY:
+    datatype: int
+    paramtype: vlogparam
+    # A character is about twice as tall as it is wide
+    default: "${2 * parameters.DX}"
+    description: Row step in fixed point
+  X0:
+    datatype: int
+    paramtype: vlogparam
+    default: "${int((vars.re - locals.step * double(parameters.COLS) / 2.0) * locals.one)}"
+    description: Real part of the top left pixel in fixed point
+  Y0:
+    datatype: int
+    paramtype: vlogparam
+    default: "${int((vars.im + locals.step * double(parameters.ROWS)) * locals.one)}"
+    description: Imaginary part of the top left pixel in fixed point
+  JULIA:
+    datatype: bool
+    paramtype: vlogparam
+    default: "${vars.fractal == 'julia'}"
+    description: Draw a Julia set instead of the Mandelbrot set
+  C_RE:
+    datatype: int
+    paramtype: vlogparam
+    default: "${int(vars.c_re * locals.one)}"
+    description: Real part of the Julia constant in fixed point
+  C_IM:
+    datatype: int
+    paramtype: vlogparam
+    default: "${int(vars.c_im * locals.one)}"
+    description: Imaginary part of the Julia constant in fixed point
+  CHARS:
+    datatype: str
+    paramtype: vlogparam
+    default: "${locals.palettes[vars.palette]}"
+    description: Characters for slow-escaping pixels and the set itself
+
+assert:
+  # verilator's -G takes 32-bit values, so X0 and friends cannot be wider
+  - condition: "parameters.BITS >= 8 && parameters.BITS <= 32"
+    message: "BITS must be 8-32 (got ${parameters.BITS})"
+  # A double cannot be interpolated into text as is, string() converts it
+  - condition: "parameters.DX > 0"
+    message: "zoom ${string(vars.zoom)} is finer than FRAC=${parameters.FRAC} bits resolve"
+  # Only checked when drawing a Julia set
+  - if: "vars.fractal == 'julia'"
+    add:
+      - condition: "vars.c_re * vars.c_re + vars.c_im * vars.c_im <= 4.0"
+        message: "c = ${string(vars.c_re)}${vars.c_im < 0.0 ? '' : '+'}${string(vars.c_im)}i lies outside |c| <= 2, so the Julia set is empty"
+
+filesets:
+  rtl:
+    files: [rtl/escape_time.v]
+    file_type: verilogSource
+  tb:
+    files: [tb/fractal_tb.v]
+    file_type: verilogSource
+
+targets:
+  # Shared by the targets below, cannot be selected itself
+  base:
+    abstract: true
+    flow: sim
+    filesets: [rtl, tb]
+    toplevel: fractal_tb
+    parameters:
+      - COLS
+      - ROWS
+      - MAX_ITER
+      - ITER_BITS
+      - BITS
+      - FRAC
+      - DX
+      - DY
+      - X0
+      - Y0
+      - JULIA
+      - CHARS
+      # The constant only matters to a Julia set
+      - if: "vars.fractal == 'julia'"
+        add: [C_RE, C_IM]
+    flow_options:
+      tool: verilator
+      mode: binary
+
+  mandelbrot:
+    extends: base
+    description: The whole Mandelbrot set
+
+  default:
+    extends: mandelbrot
+
+  julia:
+    extends: base
+    description: A Julia set, pick c with --var c_re=... --var c_im=...
+    vars: {fractal: julia, re: 0.0}
+
+  # Presets: a child's vars merge over its parent's
+  minibrot:
+    extends: mandelbrot
+    description: A copy of the Mandelbrot set on its own antenna, 70 times smaller
+    vars: {re: -1.7685, zoom: 70.0}
+
+  rabbit:
+    extends: julia
+    description: Douady's rabbit
+    vars: {c_re: -0.123, c_im: 0.745}
+
+  dendrite:
+    extends: julia
+    description: A Julia set with no interior, c = i
+    vars: {c_re: 0.0, c_im: 1.0, palette: digits}
