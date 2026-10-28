@@ -112,3 +112,23 @@ fusesoc --cores-root . run --setup --target=zybo_z7 open-logic:tutorials:vivado_
 
 CAPI=3 top levels reject the global `--tool`; the target's `flow:` picks the backend,
 and flow options go after the core name.
+
+## Demo cores
+
+Three cores were written for CAPI=3 to demo its features; they are not counted in the
+tables above. Run them without `--setup` to see the output.
+
+| Core | What it does | Features |
+|---|---|---|
+| `erikwa:games:neon_striker` | Starts a Python arcade game from a `post_build` hook after verilator lints a placeholder; needs `pygame-ce` and `numpy` | typed vars, a deprecated var, `let`, assertions, `first_match` in a script |
+| `erikwa:demo:automaton` | Prints a cellular automaton (rules 90, 30, 110 or any `--RULE`) from a verilator simulation | a CEL map indexed by an enum var, parameter defaults derived from each other, `has(env.COLUMNS)`, list macros, target assertions, `abstract`/`extends`/`inherit`, a deprecated target |
+| `erikwa:demo:fractal` | Prints Mandelbrot and Julia sets from a verilator simulation of a fixed-point engine | `real` vars turned into fixed-point parameters, a conditional parameter selection and assertion, preset targets whose vars merge over their parent's |
+
+```sh
+fusesoc --cores-root . run erikwa:demo:automaton
+fusesoc --cores-root . run --target rule110 erikwa:demo:automaton
+fusesoc --cores-root . run --target rabbit erikwa:demo:fractal
+fusesoc --cores-root . run --target minibrot erikwa:demo:fractal
+```
+
+`fusesoc core show` lists each core's variables and targets.
