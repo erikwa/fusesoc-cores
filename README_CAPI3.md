@@ -120,7 +120,7 @@ tables above. Run them without `--setup` to see the output.
 
 | Core | What it does | Features |
 |---|---|---|
-| `erikwa:games:neon_striker` | Starts a Python arcade game from a `post_build` hook after verilator lints a placeholder; needs `pygame-ce` and `numpy` | typed vars, a deprecated var, `let`, assertions, `first_match` in a script |
+| `erikwa:games:neon_striker` | Starts a Python arcade game from a `post_build` hook after verilator lints a placeholder; needs `pygame-ce` and `numpy` | typed vars, a deprecated var, `let`, assertions, `first_match` in a script, an `add:` that is one list-valued expression, `$${` passing `${PYTHON:-python3}` through make to the shell |
 | `erikwa:demo:automaton` | Prints a cellular automaton (rules 90, 30, 110 or any `--RULE`) from a verilator simulation | a CEL map indexed by an enum var, parameter defaults derived from each other, `has(env.COLUMNS)`, list macros, target assertions, `abstract`/`extends`/`inherit`, a deprecated target |
 | `erikwa:demo:fractal` | Prints Mandelbrot and Julia sets from a verilator simulation of a fixed-point engine | `real` vars turned into fixed-point parameters, a conditional parameter selection and assertion, preset targets whose vars merge over their parent's |
 | `erikwa:demo:sevenseg` (`sevenseg/`) | Prints Fibonacci numbers on seven-segment digits from a verilator simulation; a tree of six cores | a target setting a var only a dependency declares (`tails`), a dependency picked with `first_match`, a CAPI=2 dependency configured through `flags:`, a file shared by two cores with `no_export`, a deprecated core, a `bool` var |

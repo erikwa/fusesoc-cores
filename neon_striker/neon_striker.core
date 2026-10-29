@@ -7,12 +7,9 @@ provider:
   repo: git@github.com:erikwa/neon-striker-96.git
   version: 9073a2295c4e6ac2b99fc930ea0ed2796bc5960a
 
-# Lives and credits for the easy and hard difficulty presets
+# The game's arguments for the easy and hard difficulty presets
 let:
-  lives_easy: "9"
-  credits_easy: "9"
-  lives_hard: "1"
-  credits_hard: "0"
+  presets: "{'easy': ['--lives=9', '--credits=9'], 'hard': ['--lives=1', '--credits=0']}"
 
 vars:
   difficulty:
@@ -59,21 +56,25 @@ filesets:
     files: [neon_striker.py: {copyto: neon_striker.py}]
     file_type: user
 
-# Runs the game with the python3 on PATH, which must already have pygame-ce and
-# numpy. The hook runs in the build directory, so hiscore.txt is saved there.
+# Runs the game with $PYTHON, else the python3 on PATH, which must already have
+# pygame-ce and numpy. The hook runs in the build directory, so hiscore.txt is
+# saved there.
 scripts:
   play:
     cmd:
-      - python3
+      # Passed through to the shell that runs the hook: FuseSoC turns $${ into
+      # ${, make turns $$ into $, and the shell expands ${PYTHON:-python3} when
+      # the hook runs. ${env.PYTHON} would instead be read by FuseSoC when it
+      # loads the core.
+      - "$$${PYTHON:-python3}"
       - neon_striker.py
       # The first matching entry wins; else is the fallback
       - first_match:
-          - if: "vars.difficulty == 'easy'"
-            add: ["--lives=${locals.lives_easy}", "--credits=${locals.credits_easy}"]
-          - if: "vars.difficulty == 'hard'"
-            add: ["--lives=${locals.lives_hard}", "--credits=${locals.credits_hard}"]
-          - else:
+          - if: "vars.difficulty == 'custom'"
             add: ["--lives=${vars.lives}", "--credits=${vars.credits}"]
+          # An expression may give the whole list: here the preset's arguments
+          - else:
+            add: "${locals.presets[vars.difficulty]}"
       - "--start-weapon-level=${vars.start_weapon_level}"
       - "--start-level=${vars.start_level}"
 
