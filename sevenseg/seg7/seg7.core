@@ -1,0 +1,22 @@
+CAPI=3:
+name: erikwa:demo:seg7:1.0.0
+description: Hex digit to seven-segment decoder
+
+vars:
+  tails:
+    datatype: bool
+    default: false
+    description: Draw 6 and 9 with tails and 7 with a hook, so that a 6 differs from a b
+
+filesets:
+  rtl:
+    files:
+      - rtl/seg7.v
+      - ../common/segments.vh: {is_include_file: true, no_export: true}
+      # Compare the `color? (...)` pair in the CAPI=2 ansi core
+      - "rtl/${vars.tails ? 'tails' : 'plain'}/seg7_style.vh": {is_include_file: true}
+    file_type: verilogSource
+
+targets:
+  default:
+    filesets: [rtl]

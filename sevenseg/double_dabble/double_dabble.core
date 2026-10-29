@@ -1,0 +1,12 @@
+CAPI=3:
+name: erikwa:demo:double_dabble:1.0.0
+description: The old name of erikwa:demo:digits_dec
+deprecated: renamed to erikwa:demo:digits_dec
+
+filesets:
+  digits_dec:
+    depend: [erikwa:demo:digits_dec]
+
+targets:
+  default:
+    filesets: [digits_dec]

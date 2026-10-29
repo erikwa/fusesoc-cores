@@ -1,0 +1,14 @@
+CAPI=2:
+name: erikwa:demo:ansi:1.0.0
+description: Colours text with ANSI codes when the color flag is set; a CAPI=2 core in a CAPI=3 tree
+
+filesets:
+  rtl:
+    files:
+      - "color? (color/ansi.vh)": {is_include_file: true}
+      - "!color? (mono/ansi.vh)": {is_include_file: true}
+    file_type: verilogSource
+
+targets:
+  default:
+    filesets: [rtl]

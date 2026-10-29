@@ -1,0 +1,108 @@
+CAPI=3:
+name: erikwa:demo:sevenseg:1.0.0
+description: Fibonacci numbers on seven-segment digits, a tree of CAPI=3 and CAPI=2 cores
+
+vars:
+  radix:
+    datatype: enum
+    values: [dec, hex]
+    default: dec
+    description: Print the numbers in decimal or hexadecimal
+  leading_zeros:
+    datatype: bool
+    default: false
+    description: Light the leading zeros instead of blanking them
+
+let:
+  # log2 of the golden ratio: F(n) < phi^n, so n times this many bits hold F(n)
+  phi_bits: "math.log2((1.0 + math.sqrt(5.0)) / 2.0)"
+
+parameters:
+  COUNT:
+    datatype: int
+    paramtype: vlogparam
+    default: 20
+    description: How many Fibonacci numbers to print
+  WIDTH:
+    datatype: int
+    paramtype: vlogparam
+    default: "${int(math.ceil(double(parameters.COUNT) * locals.phi_bits))}"
+    description: Bits that hold the largest number
+  DIGITS:
+    datatype: int
+    paramtype: vlogparam
+    default: "${vars.radix == 'hex' ? (parameters.WIDTH + 3) / 4 : int(math.ceil(double(parameters.WIDTH) / math.log2(10.0)))}"
+    description: Digits that show the largest number
+  LEADING_ZEROS:
+    datatype: bool
+    paramtype: vlogparam
+    default: "${vars.leading_zeros}"
+    description: Light the leading zeros instead of blanking them
+
+assert:
+  # F(90) has 19 decimal digits, as many as fit in 80 columns
+  - condition: "parameters.COUNT >= 1 && parameters.COUNT <= 90"
+    message: "COUNT must be 1-90 (got ${parameters.COUNT})"
+
+filesets:
+  tb:
+    files:
+      - tb/sevenseg_tb.v
+      # Shared with seg7 from a directory neither core owns. It is not
+      # copied into the build tree, the EDAM points at it where it lies.
+      - ../common/segments.vh: {is_include_file: true, no_export: true}
+    file_type: verilogSource
+  display:
+    depend:
+      - erikwa:demo:seg7
+      # A CAPI=2 core, configured by the `color` flag below
+      - erikwa:demo:ansi
+  # Two cores provide the module to_digits, the radix var picks one
+  digits:
+    depend:
+      - first_match:
+          - if: "vars.radix == 'hex'"
+            add: [erikwa:demo:digits_hex]
+          - else:
+            add: [erikwa:demo:digits_dec]
+  # The old name of digits_dec, which warns that it is deprecated
+  digits_legacy:
+    depend: [erikwa:demo:double_dabble]
+
+targets:
+  # Shared by the targets below, cannot be selected itself
+  base:
+    abstract: true
+    flow: sim
+    filesets: [tb, display]
+    toplevel: sevenseg_tb
+    parameters: [COUNT, WIDTH, DIGITS, LEADING_ZEROS]
+    flow_options:
+      tool: verilator
+      mode: binary
+    # CAPI=2 cores read flags, not vars. Turn colour off with --flag=-color.
+    flags: {color: true}
+
+  default:
+    extends: base
+    description: Decimal digits
+    filesets:
+      - inherit: base
+      - digits
+
+  hex:
+    extends: default
+    description: Hexadecimal digits, with tails on 6, 7 and 9
+    # tails is declared by seg7, not by this core: a target may set a var that
+    # only a dependency reads. Without tails a 6 looks like a b.
+    vars: {radix: hex, tails: true}
+
+  legacy:
+    extends: base
+    description: Decimal digits from the deprecated double_dabble core
+    filesets:
+      - inherit: base
+      - digits_legacy
+    assert:
+      - condition: "vars.radix == 'dec'"
+        message: "double_dabble converts to decimal only"

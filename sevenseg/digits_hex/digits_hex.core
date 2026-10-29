@@ -1,0 +1,12 @@
+CAPI=3:
+name: erikwa:demo:digits_hex:1.0.0
+description: Binary to hexadecimal digits
+
+filesets:
+  rtl:
+    files: [rtl/digits_hex.v]
+    file_type: verilogSource
+
+targets:
+  default:
+    filesets: [rtl]

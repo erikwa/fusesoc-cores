@@ -1,0 +1,12 @@
+CAPI=3:
+name: erikwa:demo:digits_dec:1.0.0
+description: Binary to decimal digits by double dabble
+
+filesets:
+  rtl:
+    files: [rtl/digits_dec.v]
+    file_type: verilogSource
+
+targets:
+  default:
+    filesets: [rtl]
